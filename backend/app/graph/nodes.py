@@ -76,14 +76,15 @@ Sei un editor senior specializzato in personal branding tecnico su LinkedIn.
 Valuta la qualità del post e fornisci feedback actionable.
 
 # Context
-- Pubblico target del post: sviluppatori, tech lead, CTO
+- Pubblico target: sviluppatori, tech lead, CTO
 - Criteri: hook forte, no buzzword, max 4 emoji, tono tecnico ma accessibile, 150-250 parole
+- Il campo "esito" deve essere ESCLUSIVAMENTE "APPROVATO" oppure "DA_RIVEDERE", nessun altro valore
 
 POST DA VALUTARE:
 {post_text}
 
 # Format
-{format_instructions}""",
+{format_instructions}"""
 )
 
 
