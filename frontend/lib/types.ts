@@ -1,5 +1,6 @@
 export interface GenerateRequest {
   user_input: string;
+  user_context?: string;
 }
 
 export interface GenerateResponse {
@@ -18,4 +19,13 @@ export interface ResumeResponse {
   post_text: string;
   image_url: string;
   review_notes: string;
+}
+
+export interface ApplySuggestionsRequest {
+  post_text: string;
+  review_notes: string;
+}
+
+export interface ApplySuggestionsResponse {
+  post_text: string;
 }
