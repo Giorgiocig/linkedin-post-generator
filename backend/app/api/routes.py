@@ -2,12 +2,15 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from app.graph.graph import get_graph
 import uuid
+from typing import Optional
+
 
 router = APIRouter(prefix="/api")
 
 
 class GenerateRequest(BaseModel):
     user_input: str
+    user_context: Optional[str] = None
 
 
 class ResumeRequest(BaseModel):
@@ -40,15 +43,20 @@ async def generate(request: GenerateRequest):
     thread_id = str(uuid.uuid4())
     graph = get_graph()
     config = {"configurable": {"thread_id": thread_id}}
-
+    
     state = await graph.ainvoke(
-        {"user_input": request.user_input, "thread_id": thread_id}, config=config
+        {
+            "user_input": request.user_input,
+            "user_context": request.user_context or "",
+            "thread_id": thread_id
+        },
+        config=config
     )
-
+    
     return GenerateResponse(
         thread_id=thread_id,
-        post_text=state["post_text"],
-        review_notes=state.get("review_notes", ""),
+        post_text=state.get("post_text", ""),
+        review_notes=state.get("review_notes", "")
     )
 
 
