@@ -9,7 +9,7 @@ import { ReviewNotes } from "./ReviewNotes";
 import { DiagramImage } from "./DiagramImage";
 
 import { GenerateResponse, ResumeResponse } from "@/lib/types";
-import { useResumePost } from "@/lib/tanstack/linkedinPost/mutations/useResumePost";
+import { useApplySuggestions, useResumePost } from "@/lib";
 
 interface PostEditorProps {
   generateData: GenerateResponse;
@@ -19,14 +19,30 @@ export function PostEditor({ generateData }: PostEditorProps) {
   const [postText, setPostText] = useState(generateData.post_text);
   const [resumeData, setResumeData] = useState<ResumeResponse | null>(null);
 
-  const { mutate, isPending } = useResumePost((data) => {
-    setResumeData(data);
-  });
+  const { mutate: resume, isPending: isResumePending } = useResumePost(
+    (data) => {
+      setResumeData(data);
+    },
+  );
+
+  const { mutate: apply, isPending: isApplyPending } = useApplySuggestions(
+    (data) => {
+      setPostText(data.post_text);
+    },
+  );
 
   const handleApprove = () => {
-    mutate({
+    resume({
       thread_id: generateData.thread_id,
       post_text: postText,
+    });
+  };
+
+  const handleApplySuggestions = () => {
+    if (!resumeData) return;
+    apply({
+      post_text: postText,
+      review_notes: resumeData.review_notes,
     });
   };
 
@@ -39,12 +55,15 @@ export function PostEditor({ generateData }: PostEditorProps) {
         <PostTextArea
           value={postText}
           onChange={setPostText}
-          disabled={isPending}
+          disabled={isResumePending}
         />
         <PostActions
           onApprove={handleApprove}
-          isPending={isPending}
+          onApplySuggestions={handleApplySuggestions}
+          isPending={isResumePending}
+          isApplyPending={isApplyPending}
           disabled={!!resumeData}
+          showApplySuggestions={!!resumeData}
         />
         {resumeData && (
           <>
