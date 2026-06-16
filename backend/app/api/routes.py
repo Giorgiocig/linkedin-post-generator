@@ -27,6 +27,13 @@ class ResumeResponse(BaseModel):
     image_url: str
     review_notes: str
 
+class ApplySuggestionsRequest(BaseModel):
+    post_text: str
+    review_notes: str
+
+class ApplySuggestionsResponse(BaseModel):
+    post_text: str
+
 
 @router.post("/generate", response_model=GenerateResponse)
 async def generate(request: GenerateRequest):
@@ -62,3 +69,35 @@ async def resume(request: ResumeRequest):
         image_url=state.get("image_url", ""),
         review_notes=state.get("review_notes", ""),
     )
+
+@router.post("/apply-suggestions", response_model=ApplySuggestionsResponse)
+async def apply_suggestions(request: ApplySuggestionsRequest):
+    from app.graph.nodes import llm
+    from langchain_core.prompts import PromptTemplate
+
+    prompt = PromptTemplate(
+        input_variables=["post_text", "review_notes"],
+        template="""# Persona
+Sei un copywriter tecnico esperto di LinkedIn.
+
+# Task
+Riscrivi il post applicando i suggerimenti del revisore mantenendo lo stile originale.
+
+# Context
+POST ORIGINALE:
+{post_text}
+
+SUGGERIMENTI:
+{review_notes}
+
+# Format
+Restituisci SOLO il testo del post migliorato, senza commenti."""
+    )
+
+    chain = prompt | llm
+    response = await chain.ainvoke({
+        "post_text": request.post_text,
+        "review_notes": request.review_notes
+    })
+
+    return ApplySuggestionsResponse(post_text=response.content)
